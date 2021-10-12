@@ -8,7 +8,12 @@ None.
 
 ## Role Variables
 
-See `defaults/main.yml`
+    pm2_app_name: pwa                  # Application name 
+    pm2_service_name: pm2-data-pwa     # Systemd service name
+    pm2_user: www-data-pwa             # Linux username for pm2 service
+    pm2_user_home: /home/www-data-pwa  # Home directory for .pm2 configuration files and logs
+    pm2_pool_dir: /var/www/data-pwa    # Root application folder
+    pm2_platform: ""                   # Platform automatically detected when left blank (systemd for CentOS 7, 8)
 
 ## Example Playbook
 
