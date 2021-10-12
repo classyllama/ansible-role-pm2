@@ -8,7 +8,7 @@ None.
 
 ## Role Variables
 
-* `classyllama.rabbitmq`
+See `defaults/main.yml`
 
 ## Example Playbook
 
