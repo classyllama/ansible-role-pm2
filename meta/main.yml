@@ -1,0 +1,7 @@
+---
+dependencies:
+    - { role: classyllama.repo-nodesource, tags: nodejs, when: use_classyllama_repo_nodesource | default(false) }
+galaxy_info:
+  role_name: PM2
+  description: NodeJS Process Manager
+  license: MIT

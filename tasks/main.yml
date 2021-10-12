@@ -1,0 +1,80 @@
+---
+    # Install PM2 globally on the system for running System NodeJS Apps
+    - name: Install PM2
+      community.general.npm:
+        name: pm2
+        global: yes
+        production: yes
+        state: present
+      notify: update pm2
+      tags: pm2
+
+    # Setup PM2 system managed service to run PM2 daemon for app
+    - name: Populate service facts
+      ansible.builtin.service_facts:
+      tags: pm2
+      check_mode: no
+
+    - name: Installing PM2 startup script for system managed service
+      command: "pm2 startup {{ pm2_platform }} --service-name {{ pm2_service_name }} -u {{ pm2_user }} --hp {{ pm2_user_home }}"
+      tags: pm2
+      when: pm2_service_name ~ '.service' not in ansible_facts.services
+
+    # Setup/Install app
+    - name: Copy ecosystem.config.js for Magento PWA
+      ansible.builtin.template:
+        src: ecosystem.config.js.j2
+        dest: "{{ pm2_pool_dir }}/ecosystem.config.js"
+        owner: "{{ pm2_user }}"
+        group: "{{ pm2_user }}"
+        mode: '0644'
+      tags: pm2
+      notify: pm2 restart from ecosystem file
+
+    # Initialize app
+    - name: Check apps process list status
+      become_user: "{{ pm2_user }}"
+      become: yes
+      shell: "pm2 jlist | jq '. | length'"
+      changed_when: false
+      register: pm2_pool_status_result
+      args:
+        chdir: "{{ pm2_pool_dir }}"
+      failed_when: "pm2_pool_status_result.stderr is defined and pm2_pool_status_result.stderr.find('[ERROR]') != -1"
+      tags: pm2
+
+    - name: Print apps process list status
+      ansible.builtin.debug:
+        var: pm2_pool_status_result.stdout
+      when: pm2_pool_status_result.stdout is defined
+      tags: pm2
+
+    - name: Initialize apps to start
+      become_user: "{{ pm2_user }}"
+      become: yes
+      shell: "pm2 start"
+      register: pm2_pool_init_result
+      args:
+        chdir: "{{ pm2_pool_dir }}"
+      failed_when: "pm2_pool_init_result.stderr is defined and pm2_pool_init_result.stderr.find('[ERROR]') != -1"
+      when: pm2_pool_status_result.stdout is defined and pm2_pool_status_result.stdout | int <= 0
+      tags: pm2
+
+    - name: Save pm2 app list for service restart
+      become_user: "{{ pm2_user }}"
+      become: yes
+      shell: "pm2 save"
+      register: pm2_pool_save_result
+      args:
+        chdir: "{{ pm2_pool_dir }}"
+      failed_when: "pm2_pool_save_result.stderr is defined and pm2_pool_save_result.stderr.find('[ERROR]') != -1"
+      when: pm2_pool_status_result.stdout is defined and pm2_pool_status_result.stdout | int <= 0
+      tags: pm2
+      notify: restart pm2
+
+    - name: Configuring PM2 service
+      service:
+        name: "{{ pm2_service_name }}"
+        state: started
+        enabled: yes
+      tags: pm2

@@ -1,0 +1,7 @@
+---
+pm2_app_name: pwa
+pm2_service_name: pm2-data-pwa
+pm2_user: www-data-pwa
+pm2_user_home: /home/www-data-pwa
+pm2_pool_dir: /var/www/data-pwa
+pm2_platform: "" # Platform automatically detected when left blank (systemd for CentOS 7, 8)

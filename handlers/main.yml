@@ -1,0 +1,17 @@
+---
+    - name: restart pm2
+      service:
+        name: "{{ pm2_service_name }}"
+        state: restarted
+    - name: reload pm2
+      service:
+        name: "{{ pm2_service_name }}"
+        state: reloaded
+    - name: pm2 restart from ecosystem file
+      shell: if [[ $(pm2 jlist | jq '. | length') -gt 0 ]]; then pm2 delete all; fi && pm2 start && pm2 save
+      become_user: "{{ pm2_user }}"
+      become: yes
+      args:
+        chdir: "{{ pm2_pool_dir }}"
+    - name: update pm2
+      shell: pm2 update
