@@ -49,29 +49,6 @@
       when: pm2_pool_status_result.stdout is defined
       tags: pm2
 
-    - name: Initialize apps to start
-      become_user: "{{ pm2_user }}"
-      become: yes
-      shell: "pm2 start"
-      register: pm2_pool_init_result
-      args:
-        chdir: "{{ pm2_pool_dir }}"
-      failed_when: "pm2_pool_init_result.stderr is defined and pm2_pool_init_result.stderr.find('[ERROR]') != -1"
-      when: pm2_pool_status_result.stdout is defined and pm2_pool_status_result.stdout | int <= 0
-      tags: pm2
-
-    - name: Save pm2 app list for service restart
-      become_user: "{{ pm2_user }}"
-      become: yes
-      shell: "pm2 save"
-      register: pm2_pool_save_result
-      args:
-        chdir: "{{ pm2_pool_dir }}"
-      failed_when: "pm2_pool_save_result.stderr is defined and pm2_pool_save_result.stderr.find('[ERROR]') != -1"
-      when: pm2_pool_status_result.stdout is defined and pm2_pool_status_result.stdout | int <= 0
-      tags: pm2
-      notify: restart pm2
-
     - name: Configuring PM2 service
       service:
         name: "{{ pm2_service_name }}"
