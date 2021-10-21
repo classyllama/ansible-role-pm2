@@ -48,10 +48,3 @@
         var: pm2_pool_status_result.stdout
       when: pm2_pool_status_result.stdout is defined
       tags: pm2
-
-    - name: Configuring PM2 service
-      service:
-        name: "{{ pm2_service_name }}"
-        state: started
-        enabled: yes
-      tags: pm2
