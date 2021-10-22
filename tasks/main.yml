@@ -29,7 +29,6 @@
         group: "{{ pm2_user }}"
         mode: '0644'
       tags: pm2
-      notify: pm2 restart from ecosystem file
 
     # Initialize app
     - name: Check apps process list status
